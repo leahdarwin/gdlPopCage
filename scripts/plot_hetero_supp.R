@@ -1,15 +1,16 @@
 # =============================================================================
-# Manhattan Plot and Heterozygosity Figure
+# Supplemental Heterozygosity Plots
 # =============================================================================
-# Creates the main combined figure: a genome-wide Manhattan plot of
-# treatment-time interaction P-values stacked above per-cage heterozygosity
-# tracks for chromosomes 2R and 3R.
+# Plots windowed heterozygosity (H) for control vs rotenone samples at
+# generation 60, per cage, for chromosomes 2L, 2R, and 3R. Significant SNP
+# positions are marked with vertical lines.
 #
 # Author: Leah Darwin, Camille Brown
 #
 # Output files:
-#   output/man_hetero.pdf : Manhattan plot (top) and heterozygosity tracks
-#                           for chromosomes 2R and 3R (bottom)
+#   output/hetero_2L.pdf : Heterozygosity tracks for chromosome 2L, all cages
+#   output/hetero_2R.pdf : Heterozygosity tracks for chromosome 2R, all cages
+#   output/hetero_3R.pdf : Heterozygosity tracks for chromosome 3R, all cages
 # =============================================================================
 
 # ============================================================================
@@ -19,29 +20,10 @@
 library(dplyr)     # For data manipulation
 library(ggplot2)   # For creating plots
 library(patchwork) # For combining multiple plots
-library(ggrastr)   # For rasterizing point layers
-
-# ============================================================================
-# DEFINE CONSTANTS
-# ============================================================================
-
-# Order of chromosomes for plotting
-chr_order = c("2L","2R","3L","3R","4","X","Y")
-
-# Bonferroni-corrected significance threshold
-# 0.05 / 3433901 total tests
-bf = 0.05/3433901
 
 # ============================================================================
 # DATA IMPORT AND PREPROCESSING
 # ============================================================================
-
-# Read significance test results for treatment-time interaction at F60 (100kb windows)
-sig = read.csv("data/treatment_time_repl_F60_100000.csv") %>%
-  # Filter to keep only main chromosomes
-  dplyr::filter(CHR %in% c("2L","2R","3L","3R","4","X","Y"))%>%
-  # Set chromosome order as factor
-  dplyr::mutate(CHR = factor(CHR, levels = chr_order))
 
 # Read sample labels and create file paths for heterozygosity data
 labels = read.csv("data/pca/sync_labs.csv") %>%
@@ -56,58 +38,6 @@ labels$idx = row_number(labels)
 dfs = lapply(labels$pop_file,read.csv, sep="\t")
 
 # ============================================================================
-# PREPARE MANHATTAN PLOT DATA
-# ============================================================================
-
-# Calculate cumulative chromosome sizes for Manhattan plot x-axis
-chr_sizes = sig %>%
-  group_by(CHR) %>%
-  summarise(chr_len = max(BP)) %>%
-  arrange(CHR) %>%
-  # Cumulative start position for each chromosome
-  mutate(chr_start = lag(cumsum(chr_len), default = 0))
-
-# Add cumulative position to significance data
-sig = sig %>%
-  left_join(chr_sizes, by = "CHR") %>%
-  mutate(pos_cum = BP + chr_start)
-
-# Calculate center position of each chromosome for axis labels
-axis_df = chr_sizes %>%
-  mutate(center = chr_start + chr_len / 2)
-
-# Assign colors based on significance and chromosome
-sig = sig %>%
-  mutate(chr_index = as.numeric(CHR),
-         # Blue if significant (P < bf), alternating grey shades otherwise
-         chr_color = if_else(P<bf, "#3182bd",
-           if_else(chr_index %% 2 == 0, "grey60", "grey30")))
-
-# ============================================================================
-# MANHATTAN PLOT
-# ============================================================================
-
-p1 = ggplot(sig, aes(x = pos_cum, y = -log10(P))) +
-  geom_point_rast(aes(color = chr_color), size = 0.7, raster.dpi = 600) +
-  # Use colors as specified in data
-  scale_color_identity() +
-  # Label x-axis with chromosome names at center positions
-  scale_x_continuous(
-    breaks = axis_df$center,
-    labels = axis_df$CHR
-  ) +
-  labs(x = "Chromosome", y = expression(-log[10](P))) +
-  theme_classic() +
-  theme(
-    legend.position = "none",
-    panel.border = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  ) +
-  # Add horizontal line at Bonferroni threshold
-  geom_hline(yintercept = -log10(bf), linetype = "dashed", color="black")
-
-# ============================================================================
 # FUNCTION: Plot Heterozygosity
 # ============================================================================
 
@@ -119,13 +49,13 @@ p1 = ggplot(sig, aes(x = pos_cum, y = -log10(P))) +
 #' @param title Plot title (optional)
 #' @return ggplot object
 plot_H = function(df_C, df_R, chr, title){
-
+  
   # Filter to specified chromosome
   df_C = df_C %>%
     filter(chrom == chr)
   df_R = df_R %>%
     filter(chrom == chr)
-
+  
   # Create heterozygosity plot
   # Black line = control, red line = rotenone
   p = ggplot() +
@@ -141,20 +71,25 @@ plot_H = function(df_C, df_R, chr, title){
       limits = c(0, 0.3),
       expand = c(0, 0)
     )
-
+  
   # Add vertical line at significant SNP position
   if(chr=="3R"){
     # Position on 3R: 21111506 bp
     p = p+geom_vline(xintercept = 21111506/1000000, color = "#3182bd", alpha=0.6)
+    p = p+geom_vline(xintercept = 7987407/1000000, color = "#3182bd", alpha=0.6)
+    p = p+geom_vline(xintercept = 30211593/1000000, color = "#3182bd", alpha=0.6)
   }else if(chr=="2R"){
     # Position on 2R: 14854642 bp
     p = p+geom_vline(xintercept = 14854642/1000000, color = "#3182bd", alpha=0.6)
-    # p = p+geom_vline(xintercept = 7013536/1000000, color = "#3182bd", alpha=0.6)
+    p = p+geom_vline(xintercept = 11173099/1000000, color = "#3182bd", alpha=0.6)
+    p = p+geom_vline(xintercept = 7013536/1000000, color = "#3182bd", alpha=0.6)
   }else{
     # Position on 2L: 
     p = p+geom_vline(xintercept =20820035/1000000,  color = "#3182bd", alpha=0.6)
   }
-
+  
+  return(p)
+  
 }
 
 # ============================================================================
@@ -166,54 +101,54 @@ plot_H = function(df_C, df_R, chr, title){
 #' @param plots List of ggplot objects (12 plots for 6 cages x 2 columns)
 #' @return Combined patchwork plot with styled axes
 style_plots = function(plots){
-
+  
   # Interleave plots: columns 1-6 in col1, columns 7-12 in col2
-  col1 <- 1:6
-  col2 <- 7:12
-  new_order <- as.vector(rbind(col1, col2))
-  plots_list <- plots[new_order]
-
+  #col1 <- 1:6
+  #col2 <- 7:12
+  #new_order <- as.vector(rbind(col1, col2))
+  #plots_list <- plots[new_order]
+  
   #original order
-  #plots_list = plots
+  plots_list = plots
   
   # Arrange in 2 columns and remove all axis elements by default
-  p = wrap_plots(plots_list ,ncol=2)&
+  p = wrap_plots(plots_list ,ncol=3)&
     theme(
       axis.title = element_blank(),
       axis.text  = element_blank(),
       axis.ticks = element_blank()
     )
-
+  
   # Add y-axis to left-side plots (odd indices)
   left_idx <- seq(1, 12, by = 2)
-
+  
   ##for 4x3 arrangement
-  #left_idx = seq(1,12, by = 3)
+  left_idx = seq(1,12, by = 3)
   
   for (i in left_idx) {
     p[[i]] <- p[[i]] +
       theme(
-        axis.text.y  = element_text(size=6),
+        axis.text.y  = element_text(size=12),
         axis.ticks.y = element_line()
       )
   }
-
+  
   # Add x-axis to bottom plots (last row)
   bottom_idx <- c(11,12)
   
   ##for 4x3 arrangement
-  #bottom_idx = c(10,11,12)
-
+  bottom_idx = c(10,11,12)
+  
   for (i in bottom_idx) {
     p[[i]] <- p[[i]] +
       theme(
-        axis.text.x  = element_text(size=8),
+        axis.text.x  = element_text(size=12),
         axis.ticks.x = element_line()
       )
   }
-
+  
   return(p)
-
+  
 }
 
 # ============================================================================
@@ -231,6 +166,7 @@ p_2L = by(labels, labels$cage, function(x) {
 
 # Style and arrange 2R plots
 p4 = style_plots(p_2L)
+ggsave("output/hetero_2L.pdf", plot=p4, width = 8, height = 4)
 
 # Plot heterozygosity for chromosome 2R across all cages
 # by() applies function to each subset defined by labels$cage
@@ -241,6 +177,7 @@ p_2R = by(labels, labels$cage, function(x) {
 
 # Style and arrange 2R plots
 p2 = style_plots(p_2R)
+ggsave("output/hetero_2R.pdf", plot=p2, width = 8, height = 4)
 
 # Plot heterozygosity for chromosome 3R across all cages
 p_3R = by(labels, labels$cage, function(x) {
@@ -250,18 +187,4 @@ p_3R = by(labels, labels$cage, function(x) {
 
 # Style and arrange 3R plots
 p3 = style_plots(p_3R)
-
-# ============================================================================
-# COMBINE ALL PLOTS INTO FINAL FIGURE
-# ============================================================================
-
-# Combine 2R and 3R heterozygosity plots side by side
-patch = wrap_elements(p2)|wrap_elements(p3)
-
-# Stack Manhattan plot on top of heterozygosity plots
-final <- p1  / (patch) + plot_layout(heights=c(1,1.5))&
-  plot_annotation(tag_levels = 'a', tag_prefix = '(', tag_suffix = ')',
-                  theme = theme(plot.margin = margin(1, 1, 1, 1)))
-
-# Save final figure
-ggsave("output/man_hetero.pdf",plot=final, width=6, height = 5)
+ggsave("output/hetero_3R.pdf", plot=p3, width = 8, height = 4)

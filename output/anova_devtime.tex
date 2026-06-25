@@ -1,0 +1,22 @@
+\begin{table}[!h]
+\centering
+\caption{\label{tab:anova_devtime}ANOVA results for linear mixed model of development time.}
+\centering
+\begin{tabular}[t]{lrrrrrr}
+\toprule
+Term & Sum Sq & Mean Sq & NumDF & DenDF & F value & Pr(>F)\\
+\midrule
+history & 3.144 & 3.144 & 1 & 21.9 & 0.115 & 0.737\\
+generation & 9968.151 & 9968.151 & 1 & 347.4 & 366.054 & <0.0001\\
+treatment & 134591.088 & 134591.088 & 1 & 346.2 & 4942.501 & <0.0001\\
+environment & 19848.613 & 19848.613 & 1 & 21.9 & 728.888 & <0.0001\\
+history:generation & 52.385 & 52.385 & 1 & 347.4 & 1.924 & 0.166\\
+\addlinespace
+generation:treatment & 9799.902 & 9799.902 & 1 & 346.2 & 359.875 & <0.0001\\
+generation:environment & 7354.780 & 7354.780 & 1 & 347.4 & 270.085 & <0.0001\\
+history:treatment & 18.836 & 18.836 & 1 & 346.2 & 0.692 & 0.406\\
+treatment:environment & 75788.556 & 75788.556 & 1 & 346.2 & 2783.134 & <0.0001\\
+generation:treatment:environment & 7047.081 & 7047.081 & 1 & 346.2 & 258.785 & <0.0001\\
+\bottomrule
+\end{tabular}
+\end{table}

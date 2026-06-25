@@ -1,0 +1,26 @@
+\begin{table}[!h]
+\centering
+\caption{\label{tab:contrasts_f1cross}Pairwise contrasts for F1 cross development time (Bonferroni-adjusted), by treatment.}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
+\begin{tabular}[t]{lrrrrrr}
+\toprule
+contrast & treatment & estimate & SE & df & t.ratio & p.value\\
+\midrule
+C\_C - C\_R & C & -10.535 & 3.898 & 99.207 & -2.703 & 0.0485\\
+C\_C - R\_C & C & 6.858 & 3.699 & 99.551 & 1.854 & 0.4\\
+C\_C - R\_R & C & -0.330 & 3.699 & 99.551 & -0.089 & 1\\
+C\_R - R\_C & C & 17.394 & 3.804 & 100.294 & 4.573 & <0.0001\\
+C\_R - R\_R & C & 10.205 & 3.804 & 100.294 & 2.683 & 0.0512\\
+\addlinespace
+R\_C - R\_R & C & -7.188 & 3.550 & 99.014 & -2.025 & 0.274\\
+C\_C - C\_R & R & 44.395 & 3.844 & 99.679 & 11.549 & <0.0001\\
+C\_C - R\_C & R & 52.112 & 3.616 & 99.138 & 14.411 & <0.0001\\
+C\_C - R\_R & R & 61.193 & 3.616 & 99.138 & 16.922 & <0.0001\\
+C\_R - R\_C & R & 7.717 & 3.804 & 100.294 & 2.029 & 0.271\\
+\addlinespace
+C\_R - R\_R & R & 16.799 & 3.804 & 100.294 & 4.416 & 0.000152\\
+R\_C - R\_R & R & 9.081 & 3.550 & 99.014 & 2.558 & 0.0723\\
+\bottomrule
+\end{tabular}}
+\end{table}
