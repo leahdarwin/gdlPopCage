@@ -21,3 +21,6 @@ data/dmel-all-r6.57.gtf
 data/cyp450_genelist.txt
 data/complexI_genelist.txt
 data/ugt_genelist.txt
+data/filtered_snps.pass.vcf
+data/filtered_var.nohet.table
+data/var_frq.nohet.tsv

@@ -1,10 +1,25 @@
 # Scripts
 
-Author: Leah Darwin
-
 ---
 
 ## Population Genetics
+
+### `glm.sh`
+SLURM batch script that runs a generalized linear model on genome-wide pooled sequencing data. Uses the `treatment_time_repl` model: calls `poolFreqDiff_treatment_time_repl.py` on `joined.sync` to generate an R input file, then runs it with `Rscript` to produce the final GLM output. This script primarily uses scripts that have been modified from poolFreqDiff (https://github.com/RAWWiberg/poolFreqDiff/) which are given in the directory tools/poolFreqDiff. 
+
+**Outputs:**
+- `${glm_dir}treatment_time_repl.glm` — GLM results file
+- `${glm_dir}treatment_time_repl.glm.rin` — intermediate R input script
+
+---
+
+### `window_H.sh` and `window_H.py`
+SLURM array job (6 tasks) that computes windowed heterozygosity across chromosomes for pre-selection pooled sequencing data. `window_H.sh` handles cluster setup and launches `window_H.py` once per array task. `window_H.py` reads a per-sample allele frequency file, computes per-site heterozygosity (2p(1−p)), then summarises mean H in 200 kb sliding windows (20 kb step, minimum 50 SNPs) across all chromosomes.
+
+**Outputs:**
+- `data/hetero/f{1..6}_H.tsv` — windowed mean heterozygosity per sample (chrom, window_start, window_end, n_sites, H_mean)
+
+---
 
 ### `clusterSNPs.R`
 Clusters significant SNPs on each chromosome using k-means, subsets haplotype frequency data to those cluster regions, and plots founder frequency trajectories and inter-cage Jaccard similarity heatmaps.
@@ -50,6 +65,13 @@ Plots windowed heterozygosity (H) for control vs rotenone samples at generation 
 ---
 
 ## Haplotype Frequencies
+
+### `join_vcfFrq.sh`
+SLURM batch script that converts a filtered VCF to a per-sample genotype table and then joins it with pooled allele frequencies on CHROM+POS. Runs in two steps: (1) uses `bcftools` to extract genotypes per sample, recoding homozygous REF as 1, homozygous ALT as 0, and heterozygous or missing calls as NA; (2) uses `awk` to left-join the resulting table with a `.frq` allele frequency file, appending frequency columns for matching sites. This file is required for haplotype calling. 
+
+**Outputs:**
+- `data/filtered_var.nohet.table` — genotype table (CHROM, POS, REF, ALT, per-sample 0/1/NA)
+- `data/var_frq.nohet.tsv` — genotype table joined with pooled allele frequencies
 
 ### `plot_haploTrajs_CR.R`
 Plots founder haplotype frequency trajectories across generations for each significant SNP cluster region, separately for control and rotenone treatments, using the increased founders identified in `clust_bounds_founders.csv`.
