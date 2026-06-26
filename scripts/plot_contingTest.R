@@ -243,11 +243,12 @@ for (idx in seq_along(windows_list)) {
 
     f60_freq = target_avgs %>%
       filter(gen == 60, founder == target_founder) %>%
-      select(cage, treatment, freq_60 = freq)
+      select(cage, treatment, freq_60 = freq, sd_60 = pooled_sd)
 
     model_df = left_join(pc_df, f60_freq, by = c("cage", "treatment"))
 
     pc2_plots[[combo_key]] = ggplot(model_df, aes(x = PC2, y = freq_60, color = treatment)) +
+      geom_errorbar(aes(ymin = freq_60 - 1.96*sd_60, ymax = freq_60 + 1.96*sd_60), width = 0.05) +
       geom_point() +
       theme_classic() +
       scale_color_manual(values = c("R" = "red", "C" = "black")) +
@@ -288,6 +289,7 @@ for (idx in seq_along(windows_list)) {
     }))
 
     pc1_plots[[combo_key]] = ggplot(model_df, aes(x = PC1, y = freq_60, color = treatment)) +
+      geom_errorbar(aes(ymin = freq_60 - 1.96*sd_60, ymax = freq_60 + 1.96*sd_60), width = 0.05) +
       geom_point() +
       { if (nrow(pred_df) > 0) geom_line(data = pred_df, aes(x = PC1, y = freq_60, color = treatment)) } +
       theme_classic() +
@@ -336,8 +338,8 @@ for (idx in seq_along(windows_list)) {
     }))
 
     direct_plots[[combo_key]] = ggplot(pivot_df, aes(x = freq_start, y = freq_60, color = treatment)) +
-      geom_errorbarh(aes(xmin = freq_start - sd_start, xmax = freq_start + sd_start), height = 0.005) +
-      geom_errorbar(aes(ymin = freq_60 - sd_60, ymax = freq_60 + sd_60), width = 0.005) +
+      geom_errorbarh(aes(xmin = freq_start - sd_start*1.96, xmax = freq_start + sd_start*1.96), height = 0.005) +
+      geom_errorbar(aes(ymin = freq_60 - sd_60*1.96, ymax = freq_60 + sd_60*1.96), width = 0.005) +
       geom_point() +
       { if (nrow(pred_direct) > 0) geom_line(data = pred_direct, aes(x = freq_start, y = freq_60, color = treatment)) } +
       theme_classic() +
@@ -354,15 +356,18 @@ for (idx in seq_along(windows_list)) {
 
 wrap_plots(scree_plots)
 p0 = wrap_plots(loading_plots, axis_titles="collect", guides="collect")
-ggsave(paste0("output/haploPCA_loadings_F",start_gen,".pdf"), width = 9, height=7)
 p1 = wrap_plots(pca_plots, axis_titles="collect",guides="collect") 
-ggsave(paste0("output/haploPCA_windows_F",start_gen,".pdf"), width = 9, height=7)
 p2 = wrap_plots(pc1_plots, axis_titles="collect",guides="collect") 
-ggsave(paste0("output/haploPCA1_pred_F",start_gen,".pdf"), width = 9, height=7)
 p3 = wrap_plots(pc2_plots, axis_titles="collect",guides="collect") 
-ggsave(paste0("output/haploPCA2_pred_F",start_gen,".pdf"), width = 9, height=7)
 p4 = wrap_plots(direct_plots, axis_titles="collect",guides="collect")
-ggsave(paste0("output/haplofreq_pred_F",start_gen,".pdf"), width = 9, height=7)
+
+
+ggsave(paste0("output/haploPCA_loadings_F",start_gen,".pdf"),p0, width = 9, height=7)
+ggsave(paste0("output/haploPCA_windows_F",start_gen,".pdf"), p1,width = 9, height=7)
+ggsave(paste0("output/haploPCA1_pred_F",start_gen,".pdf"), p2, width = 9, height=7)
+ggsave(paste0("output/haploPCA2_pred_F",start_gen,".pdf"), p3, width = 9, height=7)
+ggsave(paste0("output/haplofreq_pred_F",start_gen,".pdf"), p4, width = 9, height=7)
+
 # ============================================================================
 # ANOVA TABLES
 # ============================================================================

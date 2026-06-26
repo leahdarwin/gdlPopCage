@@ -25,7 +25,7 @@ eps = 1e-6
 # ============================================================================
 
 # Generation to plot (must exist in sync_labs.csv, e.g. 20, 40, 60)
-gen_i = 20
+gen_i = 60
 
 # Set to TRUE to show all founders, FALSE to use founders_to_show
 show_all_founders = FALSE
