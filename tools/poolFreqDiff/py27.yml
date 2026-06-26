@@ -1,0 +1,6 @@
+name: py27
+channels:
+  - conda-forge
+dependencies:
+  - python=2.7
+prefix: /users/ldarwin/.conda/envs/py27

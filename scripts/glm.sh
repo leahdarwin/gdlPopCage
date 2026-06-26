@@ -24,7 +24,7 @@ code_dir="tools/poolFreqDiff/"
 nsamps=120
 
 ##more compute cluster specific r and python loads
-##yaml for python environment is given in the github
+##yaml for python environment @ tools/poolFreqDiff/py27.yml
 eval "$(conda shell.bash hook)"
 module load r
 module load miniforge3/25.3.0-3
